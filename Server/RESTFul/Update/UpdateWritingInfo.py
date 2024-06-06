@@ -78,6 +78,7 @@ class UpdateWritingInfo(Resource):
             writing.title = updateRv['title']
             writing.contentText = updateRv['contentText']
             writing.images = updateRv['images']
+            writing.modifyTime = updateRv['modifyTime']
             db.session.commit()
             
             return {'message': 'Update writing Success'}, 200
