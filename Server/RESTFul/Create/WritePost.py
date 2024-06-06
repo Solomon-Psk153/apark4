@@ -88,6 +88,7 @@ class WritePost(Resource):
         files = []
         
         print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        
         for i in range(len(request.files)): # for 문에서도 참조할 수 있나?
             print('이제 이미지 처리', i)
             file = request.files[f'images{i + 1}']
@@ -126,6 +127,7 @@ class WritePost(Resource):
                 db.session.add(storedImage)
                 
             db.session.commit()
+            placeUpdate(user)
             
             return {'message': f'{type} {title} is written successfully'}, 201
         
@@ -135,10 +137,7 @@ class WritePost(Resource):
         
         finally:
             db.session.close()
-        
-    def contentLengthCheck(self, type, string):
-        pass
-        
+    
     def after_request(self, response):
         # 응답 헤더에 Cache-Control 지시어 추가
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"

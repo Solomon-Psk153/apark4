@@ -3,6 +3,7 @@ from flask import request
 from FlaskAPP import app
 import jwt
 from DBClass import *
+from FunctionClass import *
 
 class UpdateLike(Resource):
     def post(self):
@@ -56,6 +57,7 @@ class UpdateLike(Resource):
                 db.session.add(newLike)
                 db.session.commit()
                 return {'message': 'i like this writing'}, 200
+            
             else:
                 db.session.delete(isILike)
                 db.session.commit()
@@ -67,4 +69,4 @@ class UpdateLike(Resource):
         
         finally:
             db.session.close()
-            
+            placeUpdate(user)
