@@ -59,9 +59,11 @@ if __name__ == '__main__':
     api.add_resource(UpdatePasswd, '/api/update/users/info/passwd')
     api.add_resource(UpdateLike, '/api/update/writing/info/internal/like')
     api.add_resource(UpdateView, '/api/update/writing/info/internal/view')
+    api.add_resource(UpdateWritingInfo, '/api/update/writing/info')
     
     #delete
     api.add_resource(DeleteUserInfo, '/api/delete/users/info')
+    api.add_resource(DeleteWritingInfo, '/api/delete/writing/info')
     
     db.init_app(app)
     app.run(host='0.0.0.0', port=5901)

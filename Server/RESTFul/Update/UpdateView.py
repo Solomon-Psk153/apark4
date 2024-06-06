@@ -64,4 +64,5 @@ class UpdateView(Resource):
             finally:
                 db.session.close()
                 
-        else: return {'message': 'View count not increased. wait for the cooldown'}, 200
+        else:
+            return {'message': 'View count not increased. wait for the cooldown'}, 200
