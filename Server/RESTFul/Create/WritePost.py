@@ -44,7 +44,12 @@ class WritePost(Resource):
         contentText = request.form.get('contentText')
         type = request.form.get('type')
         whichWriting = request.form.get('whichWriting', None)
-        image_lines = json.loads(request.form.get('image_lines', '[]'))
+        
+        try:
+            image_lines = json.loads(request.form.get('image_lines', '[]'))
+        except json.JSONDecodeError:
+            return {'message': 'JSONDecodeError'}, 400
+            
         print('title, contentText, type, whichWriting, image_lines')
         print(title, contentText, type, whichWriting, image_lines)
         
@@ -129,17 +134,18 @@ class WritePost(Resource):
             db.session.add(storedWriting)
             db.session.commit()
             
-            for i, storedImage in enumerate(storedImages):
-                path = storedImage.fileLocation + storedImage.name
-                
-                print(path)
-                
-                os.makedirs(os.path.dirname(path),exist_ok=True)
-                files[i].save(path)
-                db.session.add(storedImage)
-            
             if storedImages:
+                for i, storedImage in enumerate(storedImages):
+                    path = storedImage.fileLocation + storedImage.name
+                    
+                    print(path)
+                    
+                    os.makedirs(os.path.dirname(path),exist_ok=True)
+                    files[i].save(path)
+                    db.session.add(storedImage)
+                    
                 db.session.commit()
+                
             placeUpdate(user)
             
             return {'message': f'{type} {title} is written successfully'}, 201

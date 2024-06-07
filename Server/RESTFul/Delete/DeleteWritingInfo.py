@@ -49,12 +49,12 @@ class DeleteWritingInfo(Resource):
         
         try:
             
-            imageDir = Image.query.filter( Image.whichWriting == hash ).all()[0].fileLocation
+            imageDir = Image.query.filter( Image.whichWriting == hash ).first().fileLocation
             
             db.session.delete(writing)
             db.session.commit()
             
-            if imageDir:
+            if imageDir and os.path.exists(imageDir):
                 shutil.rmtree( os.path.abspath(imageDir) )
                 
             placeUpdate(user)
