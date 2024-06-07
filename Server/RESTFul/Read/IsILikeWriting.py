@@ -1,15 +1,13 @@
 from flask_restful import Resource, reqparse
 from flask import request
+from DBClass import *
 from FlaskAPP import app
 import jwt
-from DBClass import *
-from FunctionClass import *
 
-class UpdateLike(Resource):
+class IsILikeWriting(Resource):
     def post(self):
-        
         token = request.headers.get('Authorization')
-        
+            
         if not token:
             return {'message': 'Token is missing, Unauthorization'}, 401
         
@@ -24,12 +22,13 @@ class UpdateLike(Resource):
             return {'message': 'Invalid token'}, 401
         
         request_device_info = request.headers.get('Device-Info')
+        print("device_info:", validDevice_info, "\nDevice-Info:", request_device_info)
         if validDevice_info != request_device_info:
             return {'message': 'invalid device'}, 401
         
         user = User.query.filter_by( id=validUserID ).first()
         
-        if user is None:
+        if user is None: # 토큰으로 사용자를 DB에서 찾았을 때, 존재하지 않음
             return {'message': 'User not Found'}, 404
         
         elif user.email != validUserEmail:
@@ -37,7 +36,9 @@ class UpdateLike(Resource):
         
         parser = reqparse.RequestParser()
         parser.add_argument('hash', type=str, required=True, help='hash must be string and necessary key')
+        
         args = parser.parse_args(strict=True)
+        
         hash = args['hash']
         
         writing = Writing.query.filter( Writing.hash == hash ).first()
@@ -45,28 +46,10 @@ class UpdateLike(Resource):
         if writing is None:
             return {'message': 'Writing not found'}, 404
         
-        isILike = WritingLike.query.filter( WritingLike.userID == user.id ).first()
+        isILike = WritingLike.query.filter( (WritingLike.whichWriting == writing.hash), ( WritingLike.userID == user.id ) ).first()
         
-        try:
-            if isILike is None:
-                newLike = WritingLike(
-                    userID=validUserID,
-                    whichWriting=hash
-                )
-                
-                db.session.add(newLike)
-                db.session.commit()
-                return {'message': 'likeNo -> likeYes'}, 200
-            
-            else:
-                db.session.delete(isILike)
-                db.session.commit()
-                return {'message': 'likeYes -> likeNo'}, 200
-            
-        except Exception as e:
-            db.session.rollback()
-            return {'message': f'internal server error: {str(e)}'}, 500
+        if isILike is None:
+            return {'message': 'no'}, 200
         
-        finally:
-            db.session.close()
-            placeUpdate(user)
+        else:
+            return {'message': 'yes'}, 200

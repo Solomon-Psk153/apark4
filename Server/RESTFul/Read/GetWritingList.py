@@ -41,22 +41,22 @@ class GetWritingList(Resource):
         
         parser = reqparse.RequestParser()
         parser.add_argument('type', type=str, required=True, help='type must be string and necessary key')
-        parser.add_argument('whichWriting', type=str, required=False, help='whichWriting must be string and necessary key')
-        parser.add_argument('page', type=str, required=False, help='page must be string and necessary key')
-        parser.add_argument('items', type=str, required=False, help='items must be string and necessary key')
+        parser.add_argument('whichWriting', type=str, required=True, help='whichWriting must be string and necessary key')
+        # parser.add_argument('page', type=str, required=False, help='page must be string and necessary key')
+        # parser.add_argument('items', type=str, required=False, help='items must be string and necessary key')
         
         args = parser.parse_args(strict=True)
         
         type = args['type']
         whichWriting = args['whichWriting']
-        page = int(args['page'])
-        items = int(args['items'])
+        # page = int(args['page']) if args['page'] else 1
+        # items = int(args['items']) if args['items'] else 10
         
         if whichWriting == '':
             whichWriting = None
         
         if type in ['post', 'notice', 'trash', 'category']:
-            return {'message': self.getListedDict(whichWriting, page, items)}, 200
+            return {'message': self.getListedDict(type, whichWriting)}, 200#, page, items)}, 200
         
         elif type == 'comment':
             return {'message': self.getListedComment(whichWriting)}, 200
@@ -70,6 +70,7 @@ class GetWritingList(Resource):
         
         # comment를 시간별로 내림차순으로 정렬하고 type이 comment이고 whichWriting이 point(여기서는 어떤 글의 해시값)를 가리키는 comment를 전부 조회한다.
         allComment = Writing.query.filter( Writing.whichWriting == point, Writing.type == 'comment' ).order_by(Writing.createTime.desc()).all()
+        
         
         # comment가 비어있으면 그냥 빈 리스트를 반환한다.        
         if not allComment:
@@ -129,26 +130,24 @@ class GetWritingList(Resource):
         return rv
             
         
-    def getListedDict(self, point=None, page=1, items_per_page=10):
+    def getListedDict(self, type, point=None):#, page=1, items_per_page=10):
         
         rv = []
-        offset = (page - 1) * items_per_page
+        # offset = (page - 1) * items_per_page
         
         # 카테고리, 공지사항, 게시글 리스트
         if point is None:
             
             # 시간 순서대로 페이지에 있는 개수를 모두 쿼리한다.
-            paged_writings = Writing.query.order_by(Writing.createTime.desc())\
-            .limit(items_per_page)\
-            .offset(offset)\
-            .all()
+            paged_writings = Writing.query.filter( Writing.type == type ).order_by(Writing.createTime.desc()).all()
+            # .limit(items_per_page)\
+            # .offset(offset)\
         
         # 쓰레기 리스트
         else:
-            paged_writings = Writing.query.filter( Writing.whichWriting == point ).order_by(Writing.createTime.desc())\
-            .limit(items_per_page)\
-            .offset(offset)\
-            .all()
+            paged_writings = Writing.query.filter( (Writing.whichWriting == point), Writing.type == type ).order_by(Writing.createTime.desc()).all()
+            # .limit(items_per_page)\
+            # .offset(offset)\
         
         # 쿼리한 해시값을 리스트로 모두 구한다.
         writing_hashes = [ writing.hash for writing in paged_writings ]

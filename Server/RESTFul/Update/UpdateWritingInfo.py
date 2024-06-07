@@ -1,3 +1,4 @@
+import json
 from flask_restful import Resource, reqparse
 from flask import request
 from FlaskAPP import app
@@ -35,30 +36,27 @@ class UpdateWritingInfo(Resource):
         elif user.email != validUserEmail:
             return {'message': 'User Email in Token not match in Server'}, 400
         
-        parser = reqparse.RequestParser()
-        parser.add_argument('hash', type=str, required=True, help='hash must be string and necessary key')
-        parser.add_argument('title', type=str, required=True, help='title must be string and necessary key')
-        parser.add_argument('contentText', type=str, required=True, help='contentText must be string and necessary key')
-        parser.add_argument('images', type=list, required=True, help='images must be a list of dictionaries and necessary key')
+        data = request.get_json()  # JSON 데이터 파싱
+        hash = data.get('hash')
+        title = data.get('title')
+        contentText = data.get('contentText')
         
-        args = parser.parse_args(strict=True)
-        hash = args['hash']
+        try:
+            images = json.loads(data.get('images', []))
+        except json.JSONDecodeError:
+            return {'message': 'JSONDecodeError'}, 400
         
         writing = Writing.query.filter( (Writing.hash == hash), (Writing.author == validUserID) ).first()
         
-        if writing is None:
-            return {'message': 'Writing not found'}, 404
-        
-        title = args['title']
-        contentText = args['contentText']
-        images = args['images']
-        
-        
+        if not isinstance(images, list):
+                return {"message": "images must be a list of dictionaries and necessary key"}, 400
+
+        print(f"hash: {hash}, title: {title}, contentText: {contentText}, images: {images}")
         
         updateRv = {
             'title': title,
             'contentText': contentText,
-            images: []
+            'images': []
         }
         
         if images:

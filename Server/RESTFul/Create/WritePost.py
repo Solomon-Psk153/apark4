@@ -48,11 +48,14 @@ class WritePost(Resource):
         print('title, contentText, type, whichWriting, image_lines')
         print(title, contentText, type, whichWriting, image_lines)
         
-        if not title or not contentText or not type:
+        if not contentText or not type:
             return {'message': 'Missing required fields'}, 400
         
         if type not in ['post', 'comment', 'notice', 'category', 'trash']:
             return {'message': 'type out of range'}, 400
+        
+        elif type != 'comment' and not title:
+            return {'message': "title must be member for 'post', 'notice', 'category', 'trash'"}, 400
         
         elif type in ['trash', 'comment'] and whichWriting is None:
             return {'message': 'the trash and comment must be in larger type'}, 400
@@ -70,6 +73,9 @@ class WritePost(Resource):
         
         if whichWriting == '':
             whichWriting = None
+            
+        if title == None:
+            title = ''
         
         storedWriting = Writing(
             hash=hash,
@@ -83,6 +89,9 @@ class WritePost(Resource):
             whichWriting=whichWriting,
             type=type
         )
+        
+        print('hash, author, title, contentText, createTime, modifyTime, thumbsUp, views, whichWriting, type')
+        print(hash, author, title, contentText, createTime, modifyTime, thumbsUp, views, whichWriting, type)
         
         storedImages = []
         files = []
@@ -111,8 +120,7 @@ class WritePost(Resource):
             print('이미지를 리스트에 저장 단계 이후')
             print(whichLine)
             print("len:", len(storedImages))
-        
-        
+
         try:
             db.session.add(storedWriting)
             db.session.commit()
@@ -125,14 +133,16 @@ class WritePost(Resource):
                 os.makedirs(os.path.dirname(path),exist_ok=True)
                 files[i].save(path)
                 db.session.add(storedImage)
-                
-            db.session.commit()
+            
+            if storedImages:
+                db.session.commit()
             placeUpdate(user)
             
             return {'message': f'{type} {title} is written successfully'}, 201
         
         except Exception as e:
             db.session.rollback()
+            print(e)
             return {'message': f'server internal error: {str(e)}'}, 500
         
         finally:

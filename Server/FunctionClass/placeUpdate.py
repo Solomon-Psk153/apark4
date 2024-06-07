@@ -14,6 +14,9 @@ def placeUpdate(user):
     rv = writingCount + writingLikeCount / 10
     place = '길거리'
     
+    print('i am place updater')
+    print(user.id, rv)
+    
     if rv == 0 and rv < 30:
         pass
     
