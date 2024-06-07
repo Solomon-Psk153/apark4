@@ -50,7 +50,7 @@ if __name__ == '__main__':
     api.add_resource(GetWritingList, '/api/read/writing/list')
     api.add_resource(GetWritingPost, '/api/read/writing/list/post')
     api.add_resource(GetImage, '/api/read/image')
-    api.add_resource(GetLike, '/api/read/writing/info/internal/like')
+    api.add_resource(GetLikeCount, '/api/read/writing/info/internal/like')
     api.add_resource(GetView, '/api/read/writing/info/internal/view')
     api.add_resource(IsILikeWriting, '/api/read/writing/info/internal/like/first')
     # IsILikeWriting
