@@ -53,7 +53,7 @@ if __name__ == '__main__':
     api.add_resource(GetLikeCount, '/api/read/writing/info/internal/like')
     api.add_resource(GetView, '/api/read/writing/info/internal/view')
     api.add_resource(IsILikeWriting, '/api/read/writing/info/internal/like/first')
-    # IsILikeWriting
+    api.add_resource(GetWritingPostForUpdate, '/api/read/writing/info')
     
     #update
     api.add_resource(UpdateNickname, '/api/update/users/info/nickname')

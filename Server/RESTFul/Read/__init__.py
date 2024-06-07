@@ -5,3 +5,4 @@ from .GetImage import *
 from .GetLikeCount import *
 from .GetView import *
 from .IsILikeWriting import *
+from .GetWritingPostForUpdate import *
