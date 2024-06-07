@@ -44,16 +44,18 @@ class UpdateWritingInfo(Resource):
         contentText = data.get('contentText')
         
         try:
-            image_lines = json.loads(data.get('image_lines', '[]'))
+            new_image_lines = json.loads(data.get('new_image_lines', '[]'))
+            remainImages = json.loads(data.get('remainImages', '[]'))
+            
         except json.JSONDecodeError:
             return {'message': 'JSONDecodeError'}, 400
         
-        writing = Writing.query.filter( (Writing.hash == hash), (Writing.author == validUserID) ).first()
+        writing = Writing.query.filter( ( Writing.hash == hash ), ( Writing.author == validUserID ) ).first()
         
-        if not isinstance(image_lines, list):
+        if not isinstance(new_image_lines, list):
                 return {"message": "images must be a list of dictionaries and necessary key"}, 400
 
-        print(f"hash: {hash}, title: {title}, contentText: {contentText}, images: {image_lines}")
+        print(f"hash: {hash}, title: {title}, contentText: {contentText}, images: {new_image_lines}")
         
         newImages = []
         files = []
@@ -64,9 +66,9 @@ class UpdateWritingInfo(Resource):
             name = file.filename
             type = writing.type
             path = f'images/{type}/{createHash(validUserID, type, title, writing.createTime)}/'
-            whichLine = int(image_lines[i])
+            whichLine = int(new_image_lines[i])
             imageType = file.content_type
-            
+
             newImages.append(
                 Image(
                     name=name,
@@ -88,9 +90,18 @@ class UpdateWritingInfo(Resource):
             writing.modifyTime = datetime.now(timezone.utc)
             
             if storedImagesDir and os.path.exists(storedImagesDir):
-                shutil.rmtree( os.path.abspath(storedImagesDir) )
-                for storedImage in storedImages:
-                    db.session.delete(storedImage)
+                deletedImages = [storedImage.name for storedImage in storedImages]
+                
+                for remainImage in remainImages:
+                    if remainImage['name'] in deletedImages:
+                        deletedImages.remove(remainImage['name'])
+
+                if deletedImages:
+                    for deletedImage in deletedImages:
+                        os.remove( os.path.abspath(storedImagesDir + deletedImage) )
+                # shutil.rmtree( os.path.abspath(storedImagesDir) )
+                # for storedImage in storedImages:
+                #     db.session.delete(storedImage)
             
             if newImages:
                 for i, newImage in enumerate(newImages):
@@ -101,7 +112,6 @@ class UpdateWritingInfo(Resource):
                     os.makedirs(os.path.dirname(path),exist_ok=True)
                     files[i].save(path)
                     db.session.add(newImage)
-            
             
             db.session.commit()
             

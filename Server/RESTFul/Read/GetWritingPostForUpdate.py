@@ -4,7 +4,6 @@ from DBClass import *
 from FlaskAPP import app
 from FunctionClass import *
 import jwt, json, hashlib
-from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 class GetWritingPostForUpdate(Resource):
     def post(self):
@@ -48,22 +47,20 @@ class GetWritingPostForUpdate(Resource):
         
         images = Image.query.filter( Image.whichWriting == hash).order_by( Image.name.desc() ).all()
         
-        image_lines = image_lines = [str(image.whichLine) for image in images]
-        
         rv = {
             'title': writing.title,
             'contentText': writing.contentText,
-            'image_lines': json.dumps(image_lines)
+            'images': []
         }
-                
-        if images:
-            for i, image in enumerate(images):
-                with open(image.fileLocation + image.name, 'rb') as f:
-                    rv[f'images{i}'] = (image.name, f.read(), image.imageType)
         
-        multipart_data = MultipartEncoder(fields=rv)
+        for image in images:
+            rv.append(
+                {
+                    'name': image.name,
+                    'whichLine': image.whichLine,
+                    'fileLocation': image.fileLocation,
+                    'imageType': image.imageType
+                }
+            )
         
-        response = Response(multipart_data.to_string(), content_type=multipart_data.content_type)
-        
-        return response, 200
-        
+        return {'message': rv}, 200
