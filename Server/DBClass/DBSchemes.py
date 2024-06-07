@@ -104,7 +104,7 @@ class Writing(db.Model):
         )
     
     contentText = db.Column(
-        String, 
+        db.Text, 
         nullable=False, 
         comment="글의 내용"
         )
@@ -193,6 +193,12 @@ class Image(db.Model):
         nullable=False, 
         comment="이미지 이름"
         )
+    
+    imageType = db.Column(
+        String(50),
+        nullable=False,
+        comment="이미지 content-type"
+    )
 
     __table_args__ = (
         db.PrimaryKeyConstraint('whichWriting', 'whichLine', 'fileLocation', name='pk_image_point_Line_Location'),
@@ -200,11 +206,12 @@ class Image(db.Model):
         {'comment': "이미지(이미지가 들어있는 글의 해시값, 글에서 이미지의 위치, 이미지의 경로)"}
     )
     
-    def __init__(self, whichWriting, whichLine, fileLocation, name):
+    def __init__(self, whichWriting, whichLine, fileLocation, name, imageType):
         self.whichWriting=whichWriting
         self.whichLine=whichLine
         self.fileLocation=fileLocation
         self.name=name
+        self.imageType=imageType
         
 class WritingLike(db.Model):
     

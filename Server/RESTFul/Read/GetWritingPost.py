@@ -80,8 +80,8 @@ class GetWritingPost(Resource):
             'images': []
         }
         
-        allImages = Image.query.filter( Image.whichWriting == writing.hash ).all()
-            
+        allImages = Image.query.filter( Image.whichWriting == writing.hash ).order_by( Image.name.asc() ).all()
+        
         # 만약 이미지가 있다면
         if allImages:
             for image in allImages:

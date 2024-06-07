@@ -48,6 +48,4 @@ class GetView(Resource):
         if writing is None:
             return {'message': 'Writing not found'}, 404
         
-        writingViewCount = Writing.query.filter( Writing.hash == hash ).scalar()
-        
-        return {'message': writingViewCount}, 200
+        return {'message': writing.views}, 200

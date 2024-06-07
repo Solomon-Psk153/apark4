@@ -69,7 +69,7 @@ class GetWritingList(Resource):
         rv = []
         
         # comment를 시간별로 내림차순으로 정렬하고 type이 comment이고 whichWriting이 point(여기서는 어떤 글의 해시값)를 가리키는 comment를 전부 조회한다.
-        allComment = Writing.query.filter( Writing.whichWriting == point, Writing.type == 'comment' ).order_by(Writing.createTime.desc()).all()
+        allComment = Writing.query.filter( Writing.whichWriting == point, Writing.type == 'comment' ).order_by( Writing.createTime.desc() ).all()
         
         
         # comment가 비어있으면 그냥 빈 리스트를 반환한다.        

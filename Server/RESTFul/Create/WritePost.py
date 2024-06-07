@@ -98,6 +98,7 @@ class WritePost(Resource):
         
         print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         
+        print( len(request.files) )
         for i in range(len(request.files)): # for 문에서도 참조할 수 있나?
             print('이제 이미지 처리', i)
             file = request.files[f'images{i + 1}']
@@ -106,13 +107,16 @@ class WritePost(Resource):
             print("name: ", name)
             path = f'images/{type}/{createHash(author, type, title, createTime)}/'
             whichLine = int(image_lines[i])
+            imageType = file.content_type
+            
             print('이미지 처리 전 단계')
             storedImages.append(
                 Image(
                     name=name,
                     whichWriting=hash,
                     whichLine=whichLine,
-                    fileLocation=path
+                    fileLocation=path,
+                    imageType=imageType
                 )
             )
             print('이미지 처리 후 단계')

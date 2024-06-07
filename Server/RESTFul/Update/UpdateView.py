@@ -4,6 +4,7 @@ from FlaskAPP import app
 from datetime import timedelta
 import jwt, redis
 from DBClass import *
+from FunctionClass import placeUpdate
 
 class UpdateView(Resource):
     def post(self):
@@ -49,9 +50,11 @@ class UpdateView(Resource):
         isIView = redis_client.get(validUserID)
         
         if not isIView:
+            print(isIView)
+            redis_client.setex(validUserID, timedelta(minutes=1), value='True')
+            
             try:
                 writing.views += 1
-                redis_client.setex(validUserID, timedelta(minutes=1), value=True)
                 db.session.commit()
                 
                 # redis를 이용해서 정보를 저장해서 1분 이후에 게시글을 방문하면 다시 증가되도록 한다.
@@ -62,6 +65,7 @@ class UpdateView(Resource):
                 return {'message': f'internal server error: {str(e)}'}, 500
                 
             finally:
+                placeUpdate(user)
                 db.session.close()
                 
         else:

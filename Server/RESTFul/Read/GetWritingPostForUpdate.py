@@ -1,11 +1,12 @@
 from flask_restful import Resource, reqparse
-from flask import request
+from flask import request, Response
 from DBClass import *
 from FlaskAPP import app
-import jwt
+from FunctionClass import *
+import jwt, json, hashlib
+from requests_toolbelt.multipart.encoder import MultipartEncoder
 
-class GetLikeCount(Resource):
-    
+class GetWritingPostForUpdate(Resource):
     def post(self):
         
         token = request.headers.get('Authorization')
@@ -45,11 +46,24 @@ class GetLikeCount(Resource):
         
         writing = Writing.query.filter( Writing.hash == hash ).first()
         
-        if writing is None:
-            return {'message': 'Writing not found'}, 404
+        images = Image.query.filter( Image.whichWriting == hash).order_by( Image.name.desc() ).all()
         
-        writingLikeCount = WritingLike.query.filter( WritingLike.whichWriting == writing.hash ).count()
+        image_lines = image_lines = [str(image.whichLine) for image in images]
         
-        print(writingLikeCount)
+        rv = {
+            'title': writing.title,
+            'contentText': writing.contentText,
+            'image_lines': json.dumps(image_lines)
+        }
+                
+        if images:
+            for i, image in enumerate(images):
+                with open(image.fileLocation + image.name, 'rb') as f:
+                    rv[f'images{i}'] = (image.name, f.read(), image.imageType)
         
-        return {'message': writingLikeCount}, 200
+        multipart_data = MultipartEncoder(fields=rv)
+        
+        response = Response(multipart_data.to_string(), content_type=multipart_data.content_type)
+        
+        return response, 200
+        

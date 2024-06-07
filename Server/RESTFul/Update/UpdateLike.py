@@ -56,17 +56,17 @@ class UpdateLike(Resource):
                 
                 db.session.add(newLike)
                 db.session.commit()
-                return {'message': 'likeNo -> likeYes'}, 200
+                return {'message': 'no2yes'}, 200
             
             else:
                 db.session.delete(isILike)
                 db.session.commit()
-                return {'message': 'likeYes -> likeNo'}, 200
+                return {'message': 'yes2no'}, 200
             
         except Exception as e:
             db.session.rollback()
             return {'message': f'internal server error: {str(e)}'}, 500
         
         finally:
-            db.session.close()
             placeUpdate(user)
+            db.session.close()

@@ -23,7 +23,9 @@ class GetUserProfileInfo(Resource):
             return {'message': 'Invalid token'}, 401
         
         request_device_info = request.headers.get('Device-Info')
+        
         print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        
         print("device_info:", validDevice_info, "\nDevice-Info:", request_device_info)
         if validDevice_info != request_device_info:
             return {'message': 'invalid device'}, 401

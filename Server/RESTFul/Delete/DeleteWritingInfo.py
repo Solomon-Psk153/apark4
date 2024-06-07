@@ -2,6 +2,7 @@ from flask_restful import Resource, reqparse
 from flask import request
 from FunctionClass import *
 from DBClass import *
+import shutil
 
 class DeleteWritingInfo(Resource):
     def post(self):
@@ -42,13 +43,20 @@ class DeleteWritingInfo(Resource):
         hash = args['hash']
         
         writing = Writing.query.filter( Writing.hash == hash ).first()
-        
+
         if writing is None:
             return {'message': 'Writing not found'}, 404
         
         try:
+            
+            imageDir = Image.query.filter( Image.whichWriting == hash ).all()[0].fileLocation
+            
             db.session.delete(writing)
             db.session.commit()
+            
+            if imageDir:
+                shutil.rmtree( os.path.abspath(imageDir) )
+                
             placeUpdate(user)
             return {'message': 'writing deleted successfully'}, 200
             
