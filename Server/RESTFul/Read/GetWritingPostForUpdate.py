@@ -54,7 +54,7 @@ class GetWritingPostForUpdate(Resource):
         }
         
         for image in images:
-            rv.append(
+            rv['images'].append(
                 {
                     'name': image.name,
                     'whichLine': image.whichLine,

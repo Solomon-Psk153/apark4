@@ -36,7 +36,7 @@ class Login(Resource):
                     # 기존 토큰이 유효하고, 이메일이 일치하면 새 토큰 발급
                     if user.email == validUserEmail:
                         token = generateToken(userID, user.email, device_info)
-                        return {'message': 'Token refreshed', 'token': token}, 200
+                        return {'message': token, 'token': token, 'place': user.place}, 200
                     
                     # 토큰이 유효하지만 이메일이 일치하지 않으면 오류 반환
                     return {'message': 'User Email in Token not match in Server'}, 400
@@ -49,7 +49,8 @@ class Login(Resource):
                 
             
             token = generateToken(userID, user.email, device_info)
-            return {'message': token}, 200
+            return {'message': token,
+                    'place': user.place}, 200
     
     def after_request(self, response):
         # 응답 헤더에 Cache-Control 지시어 추가

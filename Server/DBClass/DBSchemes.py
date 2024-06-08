@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, BigInteger, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, BigInteger, ForeignKey, Double
 from .DBStateShare import db
 
 class User(db.Model):
@@ -239,3 +239,70 @@ class WritingLike(db.Model):
     def __init__(self, whichWriting, userID):
         self.whichWriting=whichWriting
         self.userID=userID
+        
+class DumpsterLocation(db.Model):
+    
+    __tablename__ = 'DumpsterLocation'
+    
+    latitude = db.Column(
+        Double,
+        nullable=False,
+        comment="위도"
+    )
+    
+    longitude = db.Column(
+        Double,
+        nullable=False,
+        comment="경도"
+    )
+    
+    province = db.Column(
+        String(200),
+        nullable=True,
+        comment="시도"
+    )
+    
+    cityDistrict = db.Column(
+        String(200),
+        nullable=True,
+        comment="시군구"
+    )
+    
+    townVillage = db.Column(
+        String(200),
+        nullable=True,
+        comment="읍면동"
+    )
+    
+    postalCode = db.Column(
+        String(200),
+        nullable=True,
+        comment="우편번호"
+    )
+    
+    address = db.Column(
+        String(200),
+        nullable=True,
+        comment="주소"
+    )
+    
+    locationComment = db.Column(
+        String(200),
+        nullable=True,
+        comment="장소에 대한 간단한 설명"
+    )
+    
+    __table_args__ = (
+        db.PrimaryKeyConstraint('latitude', 'longitude',name='pk_LatiLong'),
+        {'comment': "쓰레기 버리는 위치(위도, 경도, 시도, 시군구, 읍면동, 우편번호, 주소)"}
+    )
+    
+    def __init__(self, latitude, longitude, province, cityDistrict, townVillage, postalCode, address, locationComment):
+        self.latitude=latitude
+        self.longitude=longitude
+        self.province=province
+        self.cityDistrict=cityDistrict
+        self.townVillage=townVillage
+        self.postalCode=postalCode
+        self.address=address
+        self.locationComment=locationComment

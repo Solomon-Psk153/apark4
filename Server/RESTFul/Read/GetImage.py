@@ -40,7 +40,7 @@ class GetImage(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('directory', type=str, required=True, help='directory must be string and necessary key')
         parser.add_argument('file', type=str, required=True, help='file must be string and necessary key')
-        
+        print('before parse_args')
         args = parser.parse_args(strict=True)
         
         directory = args['directory']
