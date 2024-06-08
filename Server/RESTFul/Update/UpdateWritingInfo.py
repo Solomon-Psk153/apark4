@@ -90,15 +90,17 @@ class UpdateWritingInfo(Resource):
             writing.modifyTime = datetime.now(timezone.utc)
             
             if storedImagesDir and os.path.exists(storedImagesDir):
-                deletedImages = [storedImage.name for storedImage in storedImages]
+                deletedImages = [storedImage for storedImage in storedImages]
                 
                 for remainImage in remainImages:
-                    if remainImage['name'] in deletedImages:
-                        deletedImages.remove(remainImage['name'])
+                    for deletedImage in deletedImages:
+                        if remainImage['name'] == deletedImage.name:
+                            deletedImages.remove(deletedImage)
 
                 if deletedImages:
                     for deletedImage in deletedImages:
                         os.remove( os.path.abspath(storedImagesDir + deletedImage) )
+                        db.session.delete(deletedImage)
                 # shutil.rmtree( os.path.abspath(storedImagesDir) )
                 # for storedImage in storedImages:
                 #     db.session.delete(storedImage)

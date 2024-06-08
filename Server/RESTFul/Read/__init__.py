@@ -6,3 +6,5 @@ from .GetLikeCount import *
 from .GetView import *
 from .IsILikeWriting import *
 from .GetWritingPostForUpdate import *
+from .GetMyComment import *
+from .GetMyPost import *

@@ -54,6 +54,8 @@ if __name__ == '__main__':
     api.add_resource(GetView, '/api/read/writing/info/internal/view')
     api.add_resource(IsILikeWriting, '/api/read/writing/info/internal/like/first')
     api.add_resource(GetWritingPostForUpdate, '/api/read/writing/info')
+    api.add_resource(GetMyPost, '/api/read/users/info/post')
+    api.add_resource(GetMyComment, '/api/read/users/info/comment')
     
     #update
     api.add_resource(UpdateNickname, '/api/update/users/info/nickname')
