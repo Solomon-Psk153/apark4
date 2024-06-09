@@ -1,6 +1,7 @@
 from flask_restful import Resource, reqparse
 from flask import request
 from DBClass import *
+from FunctionClass import *
 from FlaskAPP import app
 import jwt
 

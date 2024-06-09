@@ -3,6 +3,7 @@ from flask import request
 from DBClass import *
 from FlaskAPP import app
 import jwt
+from FunctionClass import *
 
 
 class GetMyComment(Resource):

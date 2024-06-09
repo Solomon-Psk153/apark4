@@ -2,6 +2,7 @@ from flask_restful import Resource, reqparse
 from flask import request
 from DBClass import *
 from FlaskAPP import app
+from FunctionClass import *
 import jwt
 
 class UpdateUserStatus(Resource):

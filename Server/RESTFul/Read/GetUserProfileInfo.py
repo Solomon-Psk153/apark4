@@ -3,6 +3,7 @@ from DBClass import User, UserSchema
 import jwt
 from flask import request
 from FlaskAPP import app
+from FunctionClass import *
 
 class GetUserProfileInfo(Resource):
     def post(self):

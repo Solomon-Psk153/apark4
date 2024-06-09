@@ -3,6 +3,7 @@ from flask import request
 from FlaskAPP import app
 from DBClass import User, UserSchema, db
 from FunctionClass import createHash
+from FunctionClass import *
 import jwt
 
 class UpdateNickname(Resource):

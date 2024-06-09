@@ -5,6 +5,7 @@ from datetime import timedelta
 import jwt, redis
 from DBClass import *
 from FunctionClass import placeUpdate
+from FunctionClass import *
 
 class UpdateView(Resource):
     def post(self):
