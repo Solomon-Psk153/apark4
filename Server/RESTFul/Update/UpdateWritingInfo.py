@@ -55,61 +55,56 @@ class UpdateWritingInfo(Resource):
         print(f"hash: {hash}, title: {title}, contentText: {contentText}, images: {new_image_lines}")
         
         
-        originalImages = ImageSchema().dump( Image.query.filter( Image.whichWriting == hash ).all() )
+        originalImageObjs = ImageSchema().dump( Image.query.filter( Image.whichWriting == hash ).all() )
         
-        writing = Writing.query.filter( (Writing.hash == hash),  ( Writing.author == validUserID )).first()
+        originalImageName = [originalImageObj['name'] for originalImageObj in originalImageObjs]
+        originalImageIndex = [splitNameExt(name)[0][-1] for name in originalImageName]
+        
+        currentWriting = Writing.query.filter( (Writing.hash == hash),  ( Writing.author == validUserID )).first()
         
         newImages = []
         files = []
         
         delImages = []
         
-        
-        print( 'originalImages', originalImages )
         print( 'len(request.files)', len(request.files) )
-        for i in range(len(request.files)):
+        
+        # new file
+        for i, receivedFile in enumerate(request.files):
             
-            originalType = writing.type
-            originalTitle = writing.title
-            originalCreateTime = writing.createTime
+            newFileName = receivedFile.filename
+            newImageType = receivedFile.content_type
             
-            path = f'images/{originalType}/{createHash(validUserID, originalType, originalTitle, originalCreateTime)}/'
-            whichLine = int(new_image_lines[i])
-            file = request.files[f'images{i + 1}']
-            name = file.filename
+            newImageName, _ = splitNameExt(newFileName)
             
-            print('received file name', name)
+            for j in range(originalImageIndex):
+                if newImageName[-1] == originalImageIndex[j]:
+                    delImages.append(originalImageName)
             
-            if name in originalImages:
-                
-                delImages.append( Image.query.filter( (Image.fileLocation == path), (Image.name == name) ).first() )
-                
-                print('delImages', delImages)
-                
-            imageType = file.content_type
-
+            
             newImages.append(
                 Image(
-                    name=name,
+                    name=newImageName,
                     whichWriting=hash,
-                    whichLine=whichLine,
-                    fileLocation=path,
-                    imageType=imageType
+                    whichLine=int(new_image_lines[i]),
+                    fileLocation=f'images/{currentWriting.type}/{createHash(validUserID, currentWriting.type, currentWriting.title, currentWriting.createTime)}/',
+                    imageType=newImageType
                 )
             )
             
-            files.append(file)
+            files.append(receivedFile)
         
         storedImageObj = Image.query.filter( Image.whichWriting == hash ).first()
         storedImagesDir = None
+        
         if storedImageObj:
             storedImagesDir = storedImageObj.fileLocation
         
         try:
             
-            writing.title = title
-            writing.contentText = contentText
-            writing.modifyTime = datetime.now(timezone.utc)
+            currentWriting.title = title
+            currentWriting.contentText = contentText
+            currentWriting.modifyTime = datetime.now(timezone.utc)
             
             if storedImagesDir and os.path.exists(storedImagesDir):
                 if delImages:
@@ -119,7 +114,8 @@ class UpdateWritingInfo(Resource):
                         db.session.delete(delImage)
                         
                     db.session.commit()
-                
+                if os.listdir(storedImagesDir) == []:
+                    os.rmdir(storedImagesDir)
                 
             if newImages:
                 for i, newImage in enumerate(newImages):

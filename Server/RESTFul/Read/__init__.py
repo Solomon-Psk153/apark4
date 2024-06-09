@@ -8,3 +8,4 @@ from .IsILikeWriting import *
 from .GetWritingPostForUpdate import *
 from .GetMyComment import *
 from .GetMyPost import *
+from .SearchTrashWithTitle import *

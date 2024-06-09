@@ -56,7 +56,8 @@ if __name__ == '__main__':
     api.add_resource(GetWritingPostForUpdate, '/api/read/writing/info')
     api.add_resource(GetMyPost, '/api/read/users/info/post')
     api.add_resource(GetMyComment, '/api/read/users/info/comment')
-    
+    api.add_resource(SearchTrashWithTitle, '/api/read/writing/info/search')
+
     #update
     api.add_resource(UpdateNickname, '/api/update/users/info/nickname')
     api.add_resource(UpdatePasswd, '/api/update/users/info/passwd')

@@ -1,0 +1,30 @@
+from flask_restful import Resource, reqparse
+from flask import request
+from DBClass import *
+from FlaskAPP import app
+import jwt
+
+class SearchTrashWithTitle(Resource):
+    def post(self):
+        
+        parser = reqparse.RequestParser()
+        parser.add_argument('titlePart', type=str, required=True, help='titlePart must be string and necessary key')
+        
+        args = parser.parse_args(strict=True)
+        
+        titlePart = args['titlePart']
+        
+        trashWritings = Writing.query.filter( (Writing.type == 'trash'), (Writing.title.like(f'%{titlePart}%')) ).all()
+        
+        if not trashWritings:
+            return {'message': 'no title match'}, 200 
+        
+        rv = []
+        
+        for trashWriting in trashWritings:
+            rv.append({
+                'hash': trashWriting.hash,
+                'title': trashWriting.title
+            })
+        
+        return {'message': rv}, 200
