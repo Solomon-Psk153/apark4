@@ -63,6 +63,7 @@ if __name__ == '__main__':
     api.add_resource(UpdateLike, '/api/update/writing/info/internal/like')
     api.add_resource(UpdateView, '/api/update/writing/info/internal/view')
     api.add_resource(UpdateWritingInfo, '/api/update/writing/info')
+    api.add_resource(UpdateUserStatus, '/api/update/users/info/status')
     
     #delete
     api.add_resource(DeleteUserInfo, '/api/delete/users/info')

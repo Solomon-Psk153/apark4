@@ -48,6 +48,7 @@ class Register(Resource):
         
         except Exception as e:
             db.session.rollback()
+            print(e)
             return {'message': 'Error creating user: {}'.format(e)}, 500
         
         finally:

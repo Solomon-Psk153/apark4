@@ -4,7 +4,6 @@ from DBClass import *
 from FlaskAPP import app
 import jwt
 
-
 class GetMyPost(Resource):
     
     def post(self):

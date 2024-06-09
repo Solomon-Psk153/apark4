@@ -45,28 +45,47 @@ class UpdateWritingInfo(Resource):
         
         try:
             new_image_lines = json.loads(data.get('new_image_lines', '[]'))
-            remainImages = json.loads(data.get('remainImages', '[]'))
             
         except json.JSONDecodeError:
             return {'message': 'JSONDecodeError'}, 400
-        
-        writing = Writing.query.filter( ( Writing.hash == hash ), ( Writing.author == validUserID ) ).first()
         
         if not isinstance(new_image_lines, list):
                 return {"message": "images must be a list of dictionaries and necessary key"}, 400
 
         print(f"hash: {hash}, title: {title}, contentText: {contentText}, images: {new_image_lines}")
         
+        
+        originalImages = ImageSchema().dump( Image.query.filter( Image.whichWriting == hash ).all() )
+        
+        writing = Writing.query.filter( (Writing.hash == hash),  ( Writing.author == validUserID )).first()
+        
         newImages = []
         files = []
         
-        print( len(request.files) )
+        delImages = []
+        
+        
+        print( 'originalImages', originalImages )
+        print( 'len(request.files)', len(request.files) )
         for i in range(len(request.files)):
+            
+            originalType = writing.type
+            originalTitle = writing.title
+            originalCreateTime = writing.createTime
+            
+            path = f'images/{originalType}/{createHash(validUserID, originalType, originalTitle, originalCreateTime)}/'
+            whichLine = int(new_image_lines[i])
             file = request.files[f'images{i + 1}']
             name = file.filename
-            type = writing.type
-            path = f'images/{type}/{createHash(validUserID, type, title, writing.createTime)}/'
-            whichLine = int(new_image_lines[i])
+            
+            print('received file name', name)
+            
+            if name in originalImages:
+                
+                delImages.append( Image.query.filter( (Image.fileLocation == path), (Image.name == name) ).first() )
+                
+                print('delImages', delImages)
+                
             imageType = file.content_type
 
             newImages.append(
@@ -80,31 +99,28 @@ class UpdateWritingInfo(Resource):
             )
             
             files.append(file)
-            
-        storedImages = Image.query.filter( Image.whichWriting == hash ).order_by( Image.name.asc() ).all()
-        storedImagesDir = storedImages[0].fileLocation
+        
+        storedImageObj = Image.query.filter( Image.whichWriting == hash ).first()
+        storedImagesDir = None
+        if storedImageObj:
+            storedImagesDir = storedImageObj.fileLocation
         
         try:
+            
             writing.title = title
             writing.contentText = contentText
             writing.modifyTime = datetime.now(timezone.utc)
             
             if storedImagesDir and os.path.exists(storedImagesDir):
-                deletedImages = [storedImage for storedImage in storedImages]
+                if delImages:
+                    for delImage in delImages:
+                        
+                        os.remove( os.path.abspath(delImage.path + delImage.name) )
+                        db.session.delete(delImage)
+                        
+                    db.session.commit()
                 
-                for remainImage in remainImages:
-                    for deletedImage in deletedImages:
-                        if remainImage['name'] == deletedImage.name:
-                            deletedImages.remove(deletedImage)
-
-                if deletedImages:
-                    for deletedImage in deletedImages:
-                        os.remove( os.path.abspath(storedImagesDir + deletedImage) )
-                        db.session.delete(deletedImage)
-                # shutil.rmtree( os.path.abspath(storedImagesDir) )
-                # for storedImage in storedImages:
-                #     db.session.delete(storedImage)
-            
+                
             if newImages:
                 for i, newImage in enumerate(newImages):
                     path = newImage.fileLocation + newImage.name
@@ -116,11 +132,30 @@ class UpdateWritingInfo(Resource):
                     db.session.add(newImage)
             
             db.session.commit()
+                        
+                        
+            
+            # if storedImagesDir and os.path.exists(storedImagesDir):
+            #     deletedImages = [storedImage for storedImage in storedImages]
+                
+            #     for remainImage in remainImages:
+            #         for deletedImage in deletedImages:
+            #             if remainImage['name'] == deletedImage.name:
+            #                 deletedImages.remove(deletedImage)
+
+            #     if deletedImages:
+            #         for deletedImage in deletedImages:
+            #             os.remove( os.path.abspath(storedImagesDir + deletedImage) )
+            #             db.session.delete(deletedImage)
+            #     # shutil.rmtree( os.path.abspath(storedImagesDir) )
+            #     # for storedImage in storedImages:
+            #     #     db.session.delete(storedImage)
             
             return {'message': 'Update writing Success'}, 200
         
         except Exception as e:
             db.session.rollback()
+            print(e)
             return {'message': f'internal server error: {str(e)}'}, 500
         
         finally:
