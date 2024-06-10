@@ -13,10 +13,10 @@ class IsILikeWriting(Resource):
         if response[1] > 300:
             return response 
         
-        validUserID = response['validUserID']
-        validUserEmail = response['validUserEmail']
-        validDevice_info = response['validDevice_info']
-        user = response['user']
+        validUserID = response[0]['validUserID']
+        validUserEmail = response[0]['validUserEmail']
+        validDevice_info = response[0]['validDevice_info']
+        user = response[0]['user']
         
         parser = reqparse.RequestParser()
         parser.add_argument('hash', type=str, required=True, help='hash must be string and necessary key')

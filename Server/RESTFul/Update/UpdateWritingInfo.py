@@ -1,4 +1,5 @@
 import json
+import random
 from flask_restful import Resource
 from flask import request
 from FlaskAPP import app
@@ -16,16 +17,16 @@ class UpdateWritingInfo(Resource):
         if response[1] > 300:
             return response 
         
-        validUserID = response['validUserID']
-        validUserEmail = response['validUserEmail']
-        validDevice_info = response['validDevice_info']
-        user = response['user']
+        validUserID = response[0]['validUserID']
+        validUserEmail = response[0]['validUserEmail']
+        validDevice_info = response[0]['validDevice_info']
+        user = response[0]['user']
         
         data = request.form  # JSON 데이터 파싱
         hash = data.get('hash')
         title = data.get('title')
         contentText = data.get('contentText')
-        
+        print(title, contentText)
         try:
             new_image_lines = json.loads(data.get('new_image_lines', '[]'))
             deleteImages = json.loads(data.get('deleteImageNames', '[]'))
@@ -40,6 +41,8 @@ class UpdateWritingInfo(Resource):
         
         currentWriting = Writing.query.filter( (Writing.hash == hash),  ( Writing.author == validUserID )).first()
         
+        imagesWhichLine = [image.whichLine for image in Image.query.filter( (Image.whichWriting == currentWriting.hash) ).all()]
+        
         newImages = []
         files = []
         
@@ -47,33 +50,45 @@ class UpdateWritingInfo(Resource):
         
         # new file
         for i, receivedFile in enumerate(request.files):
-            
+            receivedFile = request.files[receivedFile]
             newImageName = receivedFile.filename
             newImageType = receivedFile.content_type
+            
+            newWhichLine = int(new_image_lines[i])
+            while newWhichLine in imagesWhichLine:
+                print(newWhichLine)
+                newWhichLine = random.randint(0, 2147483647)
+                newImageName = str(newWhichLine)
+                
+            while newWhichLine in [newImage.whichLine for newImage in newImages]:
+                newWhichLine = random.randint(-2147483648, 2147483647)
+                newImageName = str(newWhichLine)
+                
             
             newImages.append(
                 Image(
                     name=newImageName,
                     whichWriting=hash,
-                    whichLine=int(new_image_lines[i]),
-                    fileLocation=f'images/{currentWriting.type}/{createHash(validUserID, currentWriting.type, currentWriting.title, currentWriting.createTime)}/',
-                    imageType=newImageType
+                    whichLine=newWhichLine,
+                    fileLocation=currentWriting.folder,
+                    imageType=newImageType,
+                    storeTime=datetime.now(timezone.utc)
                 )
             )
             
             files.append(receivedFile)
-        
-        storedImageObj = Image.query.filter( Image.whichWriting == hash ).first()
-        storedImagesDir = None
-        
-        if storedImageObj:
-            storedImagesDir = storedImageObj.fileLocation
-        
+
         try:
             
+            deleteFileList = []
+            saveFileList = []
             currentWriting.title = title
             currentWriting.contentText = contentText
             currentWriting.modifyTime = datetime.now(timezone.utc)
+            
+            print(currentWriting.title)
+            print(currentWriting.contentText)
+            print(currentWriting.modifyTime)
             
             db.session.commit()
             
@@ -84,23 +99,31 @@ class UpdateWritingInfo(Resource):
                     
                     if deleteImageFromDB:
                         db.session.delete( deleteImageFromDB )
-                        os.remove( os.path.abspath(deleteImage[0] + deleteImage[1]) )
+                        # os.remove( os.path.abspath(deleteImage[0] + deleteImage[1]) )
+                        deleteFileList.append( os.path.abspath(deleteImage[0] + deleteImage[1]) )
                         db.session.commit()
-                
-                if storedImagesDir and os.listdir(storedImagesDir) == [] and not newImages:
-                    os.rmdir(storedImagesDir)
                 
             if newImages:
                 for i, newImage in enumerate(newImages):
                     path = newImage.fileLocation + newImage.name
                     
-                    print(path)
+                    print('pathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpathpath',path)
                     
-                    os.makedirs(os.path.dirname(path),exist_ok=True)
-                    files[i].save(path)
+                    saveFileList.append(path)
+                    print(newImage.whichLine)
+                    print(newImage.name)
                     db.session.add(newImage)
             
                 db.session.commit()
+            
+            
+            for deleteFile in deleteFileList:
+                os.remove(deleteFile)
+                
+            print(files, saveFileList)
+            
+            for i, saveFile in enumerate(saveFileList):
+                files[i].save(saveFile)
             
             return {'message': 'Update writing Success'}, 200
         

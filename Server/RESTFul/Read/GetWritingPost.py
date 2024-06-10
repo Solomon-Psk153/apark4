@@ -27,10 +27,10 @@ class GetWritingPost(Resource):
             if response[1] > 300:
                 return response 
             
-            validUserID = response['validUserID']
-            validUserEmail = response['validUserEmail']
-            validDevice_info = response['validDevice_info']
-            user = response['user']
+            validUserID = response[0]['validUserID']
+            validUserEmail = response[0]['validUserEmail']
+            validDevice_info = response[0]['validDevice_info']
+            user = response[0]['user']
         
         author = User.query.filter( User.id == writing.author ).first()
         
@@ -52,7 +52,7 @@ class GetWritingPost(Resource):
             'images': []
         }
         
-        allImages = Image.query.filter( Image.whichWriting == writing.hash ).order_by( Image.name.asc() ).all()
+        allImages = Image.query.filter( Image.whichWriting == writing.hash ).order_by( Image.storeTime.asc() ).all()
         
         # 만약 이미지가 있다면
         if allImages:

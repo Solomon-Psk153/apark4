@@ -26,10 +26,10 @@ class GetWritingList(Resource):
             if response[1] > 300:
                 return response 
             
-            validUserID = response['validUserID']
-            validUserEmail = response['validUserEmail']
-            validDevice_info = response['validDevice_info']
-            user = response['user']
+            validUserID = response[0]['validUserID']
+            validUserEmail = response[0]['validUserEmail']
+            validDevice_info = response[0]['validDevice_info']
+            user = response[0]['user']
 
         
         if whichWriting == '':

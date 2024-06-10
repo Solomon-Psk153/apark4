@@ -146,6 +146,12 @@ class Writing(db.Model):
         nullable=False, 
         comment="게시글, 댓글, 공지사항, 카테고리, 쓰레기 중 하나의 게시글 종류"
         )
+    
+    folder = db.Column(
+        String(240),
+        nullable=False,
+        comment="이미지 저장하는 폴더"
+    )
 
     __table_args__ = (
         db.PrimaryKeyConstraint('hash', name='pk_hash'),
@@ -154,7 +160,7 @@ class Writing(db.Model):
         {'comment': '글(해시값, 작성자, 글 이름, 텍스트 내용, 생성 날짜, 수정 날짜, 추천 수, 조회 수, 소속된 글의 해시값, 분류)'}
     )
     
-    def __init__(self, hash, author, title, contentText, createTime, modifyTime, thumbsUp, views, whichWriting, type):
+    def __init__(self, hash, author, title, contentText, createTime, modifyTime, thumbsUp, views, whichWriting, type,folder):
             self.hash=hash
             self.author=author
             self.title=title
@@ -164,7 +170,8 @@ class Writing(db.Model):
             self.thumbsUp=thumbsUp
             self.views=views
             self.whichWriting=whichWriting
-            self.type=type
+            self.type=type,
+            self.folder=folder
             
 class Image(db.Model):
     
@@ -199,6 +206,12 @@ class Image(db.Model):
         nullable=False,
         comment="이미지 content-type"
     )
+    
+    storeTime = db.Column(
+        DateTime(6),
+        nullable=False,
+        comment="이미지가 저장된 시간"
+    )
 
     __table_args__ = (
         db.PrimaryKeyConstraint('whichWriting', 'whichLine', 'fileLocation', name='pk_image_point_Line_Location'),
@@ -206,12 +219,13 @@ class Image(db.Model):
         {'comment': "이미지(이미지가 들어있는 글의 해시값, 글에서 이미지의 위치, 이미지의 경로)"}
     )
     
-    def __init__(self, whichWriting, whichLine, fileLocation, name, imageType):
+    def __init__(self, whichWriting, whichLine, fileLocation, name, imageType, storeTime):
         self.whichWriting=whichWriting
         self.whichLine=whichLine
         self.fileLocation=fileLocation
         self.name=name
         self.imageType=imageType
+        self.storeTime=storeTime
         
 class WritingLike(db.Model):
     

@@ -7,32 +7,16 @@ from FunctionClass import createHash
 
 class DeleteUserInfo(Resource):
     def post(self):
-        token = request.headers.get('Authorization')
         
-        if not token:
-            return {'message': 'Token is missing, Unauthorization'}, 401
+        response = tokenCheck()
         
-        try:
-            decoded = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-            validUserID = decoded['id']
-            validUserEmail = decoded['email']
-            validDevice_info = decoded['device_info']
-        except jwt.ExpiredSignatureError:
-            return {'message': 'Token has expired'}, 401
-        except jwt.InvalidTokenError:
-            return {'message': 'Invalid token'}, 401
+        if response[1] > 300:
+            return response 
         
-        request_device_info = request.headers.get('Device-Info')
-        if validDevice_info != request_device_info:
-            return {'message': 'invalid device'}, 401
-        
-        user = User.query.filter_by( id=validUserID ).first()
-        
-        if user is None:
-            return {'message': 'User not Found'}, 404
-        
-        elif user.email != validUserEmail:
-            return {'message': 'User Email in Token not match in Server'}, 400
+        validUserID = response[0]['validUserID']
+        validUserEmail = response[0]['validUserEmail']
+        validDevice_info = response[0]['validDevice_info']
+        user = response[0]['user']
         
         parser = reqparse.RequestParser()
         parser.add_argument('passwd', type=str, required=True, help='passwd must be string and necessary key')

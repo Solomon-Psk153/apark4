@@ -1,3 +1,4 @@
+import random
 from flask_restful import Resource, reqparse
 from flask import request
 from DBClass import *
@@ -17,10 +18,10 @@ class WritePost(Resource):
         if response[1] > 300:
             return response 
         
-        validUserID = response['validUserID']
-        validUserEmail = response['validUserEmail']
-        validDevice_info = response['validDevice_info']
-        user = response['user']
+        validUserID = response[0]['validUserID']
+        validUserEmail = response[0]['validUserEmail']
+        validDevice_info = response[0]['validDevice_info']
+        user = response[0]['user']
         
         # tokenCheck
         
@@ -58,6 +59,7 @@ class WritePost(Resource):
         
         # createTimeStr = createTime.strftime('%Y-%m-%d %H:%M:%S.%f')
         hash = createHash(author, type, title, createTime, addSalt = True)
+        folder=f'images/{type}/{createHash(author, type, title, createTime)}/'
         
         print('whichWriting is here', whichWriting)
         
@@ -77,8 +79,11 @@ class WritePost(Resource):
             thumbsUp=thumbsUp,
             views=views,
             whichWriting=whichWriting,
-            type=type
+            type=type,
+            folder=folder
         )
+        
+        os.makedirs(os.path.dirname(folder),exist_ok=True)
         
         print('hash, author, title, contentText, createTime, modifyTime, thumbsUp, views, whichWriting, type')
         print(hash, author, title, contentText, createTime, modifyTime, thumbsUp, views, whichWriting, type)
@@ -89,31 +94,37 @@ class WritePost(Resource):
         print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         
         print( len(request.files) )
-        for i in range(len(request.files)): # for 문에서도 참조할 수 있나?
+        
+        for i, file in enumerate(request.files):
+            file = request.files[file]
             print('이제 이미지 처리', i)
-            file = request.files[f'images{i + 1}']
             print(file)
             name = file.filename
             print("name: ", name)
-            path = f'images/{type}/{createHash(author, type, title, createTime)}/'
+            path = storedWriting.folder
             whichLine = int(image_lines[i])
             imageType = file.content_type
             
-            print('이미지 처리 전 단계')
+            while whichLine in [newImage.whichLine for newImage in storedImages]:
+                whichLine = random.randint(-2147483648, 2147483647)
+                name = str(whichLine)
+            
             storedImages.append(
                 Image(
                     name=name,
                     whichWriting=hash,
                     whichLine=whichLine,
                     fileLocation=path,
-                    imageType=imageType
+                    imageType=imageType,
+                    storeTime=createTime
                 )
             )
-            print('이미지 처리 후 단계')
-            files.append(file)
+            
             print('이미지를 리스트에 저장 단계 이후')
             print(whichLine)
             print("len:", len(storedImages))
+            
+            files.append(file)
 
         try:
             db.session.add(storedWriting)
@@ -124,8 +135,7 @@ class WritePost(Resource):
                     path = storedImage.fileLocation + storedImage.name
                     
                     print(path)
-                    
-                    os.makedirs(os.path.dirname(path),exist_ok=True)
+
                     files[i].save(path)
                     db.session.add(storedImage)
                     
