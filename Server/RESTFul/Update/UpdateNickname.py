@@ -21,9 +21,9 @@ class UpdateNickname(Resource):
         user = response[0]['user']
         
         parser = reqparse.RequestParser()
-        parser.add_argument('nickname', type=str, required=True, help='nickname must be string and necessary key')
+        parser.add_argument('newNickname', type=str, required=True, help='newNickname must be string and necessary key')
         args = parser.parse_args(strict=True)
-        nickname = args['nickname']
+        nickname = args['newNickname']
         
         try:
             user.nickname = nickname

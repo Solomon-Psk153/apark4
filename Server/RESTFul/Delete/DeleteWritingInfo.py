@@ -41,7 +41,9 @@ class DeleteWritingInfo(Resource):
                 
             placeUpdate(user)
             return {'message': 'writing deleted successfully'}, 200
-            
+        except FileNotFoundError:
+            return {'message': 'writing deleted successfully anyway'}, 200
+        
         except Exception as e:
             db.session.rollback()
             print(e)
@@ -49,3 +51,4 @@ class DeleteWritingInfo(Resource):
         
         finally:
             db.session.close()
+            

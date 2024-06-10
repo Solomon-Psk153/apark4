@@ -18,3 +18,7 @@ class ImageSchema(ma.SQLAlchemyAutoSchema):
 class WritingLikeSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = WritingLike
+        
+class DumpsterLocationSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = DumpsterLocation

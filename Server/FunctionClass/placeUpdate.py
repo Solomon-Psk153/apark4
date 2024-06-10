@@ -18,7 +18,7 @@ def placeUpdate(user):
     print(user.id, rv)
     
     if rv == 0 and rv < 30:
-        pass
+        place = '길거리'
     
     elif rv < 100:
         place = '휴지통'

@@ -3,7 +3,7 @@ from flask import request
 import jwt
 from FlaskAPP import app
 from DBClass import *
-from FunctionClass import createHash
+from FunctionClass import *
 
 class DeleteUserInfo(Resource):
     def post(self):
